@@ -5,6 +5,7 @@ import "dotenv/config";
 import fs from "fs";
 import mongoose from "mongoose";
 import { imagetotext } from "./utils/imagetotextllava.js";
+import medicineRoutes from "./routes/medicine.js";
 import prescriptionModel from "./models/prescription.js";
 
 const app = express().use(bodyParser.json());
@@ -29,6 +30,8 @@ mongoose
 app.listen(PORT, async () => {
   console.log("Server is running on port " + PORT);
 });
+
+app.use("/medicine", medicineRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).send("200 | Server Running");
