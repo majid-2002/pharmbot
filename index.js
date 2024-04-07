@@ -3,23 +3,36 @@ import bodyParser from "body-parser";
 import axios from "axios";
 import "dotenv/config";
 import fs from "fs";
+import mongoose, { mongo } from "mongoose";
 
-const router = express().use(bodyParser.json());
+const app = express().use(bodyParser.json());
 
 const verify_token = process.env.VERIFY_TOKEN;
 const access_token = process.env.ACCESS_TOKEN;
+const MONGO_URI = process.env.MONGO_URI;
 
 const PORT = process.env.PORT || 8000;
 
-router.listen(PORT, async () => {
+mongoose.set("strictQuery", true);
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("Connected to the database");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+app.listen(PORT, async () => {
   console.log("Server is running on port " + PORT);
 });
 
-router.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.status(200).send("200 | Server Running");
 });
 
-router.get("/webhook", (req, res) => {
+app.get("/webhook", (req, res) => {
   try {
     let mode = req.query["hub.mode"];
     let challenge = req.query["hub.challenge"];
@@ -40,7 +53,7 @@ router.get("/webhook", (req, res) => {
   }
 });
 
-router.post("/webhook", async (req, res) => {
+app.post("/webhook", async (req, res) => {
   try {
     let body_param = req.body;
 
