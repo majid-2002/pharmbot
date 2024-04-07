@@ -2,6 +2,7 @@
 import dotenv from "dotenv";
 import Replicate from "replicate";
 const replicate = new Replicate();
+import { readFile } from "node:fs/promises";
 
 dotenv.config();
 
@@ -67,18 +68,26 @@ in this format :
   ]
 }`;
 
-async function imagetotext(imageURL) {
-  const input = {
-    image: imageURL,
-    prompt: prescriptionformat,
-  };
+async function imagetotext(imagePath) {
+  try {
+    const data = (await readFile(imagePath)).toString("base64");
+    const image = `data:application/octet-stream;base64,${data}`;
 
-  const output = await replicate.run(
-    "yorickvp/llava-13b:b5f6212d032508382d61ff00469ddda3e32fd8a0e75dc39d8a4191bb742157fb",
-    { input }
-  );
+    const input = {
+      image: image,
+      prompt: prescriptionformat,
+    };
 
-  return output;
+    const output = await replicate.run(
+      "yorickvp/llava-13b:b5f6212d032508382d61ff00469ddda3e32fd8a0e75dc39d8a4191bb742157fb",
+      { input }
+    );
+
+    return output.join("");
+  } catch (error) {
+    console.error({ error });
+    return null;
+  }
 }
 
 export { imagetotext };

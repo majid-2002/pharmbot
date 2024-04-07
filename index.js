@@ -3,7 +3,9 @@ import bodyParser from "body-parser";
 import axios from "axios";
 import "dotenv/config";
 import fs from "fs";
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
+import { imagetotext } from "./utils/imagetotextllava.js";
+import prescriptionModel from "./models/prescription.js";
 
 const app = express().use(bodyParser.json());
 
@@ -71,6 +73,37 @@ app.post("/webhook", async (req, res) => {
       let from = body_param.entry[0].changes[0].value.messages[0].from;
       let msg = body_param.entry[0].changes[0].value.messages[0];
 
+      if (msg.type === "text" && msg.text) {
+        // welcome message
+        if (
+          msg.text.body === "hi" ||
+          msg.text.body === "Hi" ||
+          msg.text.body === "hello" ||
+          msg.text.body === "Hello"
+        ) {
+          await axios({
+            method: "POST",
+            url:
+              "https://graph.facebook.com/v13.0/" +
+              phone_no_id +
+              "/messages?access_token=" +
+              access_token,
+            data: {
+              messaging_product: "whatsapp",
+              to: from,
+              type: "text",
+              text: {
+                body: "Hello, Please send you medical prescription for buying the medicines.",
+              },
+            },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${access_token}`,
+            },
+          });
+        }
+      }
+
       if (msg.type === "image" && msg.image) {
         // Retrieve media URL
         let mediaId = msg.image.id;
@@ -78,6 +111,54 @@ app.post("/webhook", async (req, res) => {
         let mediaData = await downloadMedia(mediaUrl);
 
         fs.writeFileSync("./media/" + mediaId + ".jpeg", mediaData);
+
+        // {
+        //   patient: {
+        //     name: "John Smith",
+        //     address: "1662 Emply St, NY, NY, USA",
+        //     age: 34,
+        //   },
+        //   prescription: [
+        //     {
+        //       drug: "Beta-Lactam 100 mg-1 tab BID",
+        //       dosage: "100 mg-1 tab BID",
+        //       quantity: "1 tab BID",
+        //     },
+        //     {
+        //       drug: "Doxycycline 100 mg-2 tab TD",
+        //       dosage: "100 mg-2 tab TD",
+        //       quantity: "2 tab TD",
+        //     },
+        //     {
+        //       drug: "Cimetidine 50 mg-1 tab QID",
+        //       dosage: "50 mg-1 tab QID",
+        //       quantity: "1 tab QID",
+        //     },
+        //     {
+        //       drug: "Oxpeprazole 50 mg-1 tab QD",
+        //       dosage: "50 mg-1 tab QD",
+        //       quantity: "1 tab QD",
+        //     },
+        //   ],
+        // };
+        // Convert image to text
+        let prescriptionData = JSON.parse(
+          await imagetotext("./media/" + mediaId + ".jpeg")
+        );
+
+        const prescriptionInstance = new prescriptionModel({
+          patient: prescriptionData.patient,
+          prescription: prescriptionData.prescription,
+        });
+
+        prescriptionInstance
+          .save()
+          .then((savedPrescription) => {
+            console.log("Prescription saved successfully:", savedPrescription);
+          })
+          .catch((error) => {
+            console.error("Error saving prescription:", error);
+          });
 
         // Send a confirmation message
         await axios({
@@ -92,7 +173,7 @@ app.post("/webhook", async (req, res) => {
             to: from,
             type: "text",
             text: {
-              body: "Image received and saved successfully.",
+              body: "Your prescription has been received. We will get back to you shortly.",
             },
           },
           headers: {
@@ -102,6 +183,7 @@ app.post("/webhook", async (req, res) => {
         });
       }
     }
+
     return res.sendStatus(200);
   } catch (error) {
     console.error({ error });
