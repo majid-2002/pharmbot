@@ -8,8 +8,8 @@ import { imagetotext } from "./utils/imagetotextllava.js";
 import medicineRoutes from "./routes/medicine.js";
 import prescriptionModel from "./models/prescription.js";
 import pharmacyRoutes from "./routes/pharmacy.js";
-import prescriptionRoutes from "./routes/prescription.js";
-
+import orderRoutes from './routes/order.js'
+import prescriptionRoutes from './routes/prescription.js'
 import cors from "cors";
 
 const app = express().use(bodyParser.json());
@@ -37,8 +37,10 @@ app.listen(PORT, async () => {
 });
 
 app.use("/medicine", medicineRoutes);
-app.use("/pharmacy", pharmacyRoutes);
-app.use("/prescription", prescriptionRoutes);
+app.use('/pharmacy',pharmacyRoutes)
+app.use('/order',orderRoutes)
+app.use('/prescription',prescriptionRoutes)
+
 
 app.get("/", (req, res) => {
   res.status(200).send("200 | Server Running");

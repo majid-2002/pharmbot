@@ -22,7 +22,6 @@ router.post("/", async (req, res) => {
       prescription: prescription,
     });
 
-
     await newPrescription.save();
 
     res.status(201).json(newPrescription);
