@@ -36,8 +36,8 @@ app.listen(PORT, async () => {
 
 app.use("/medicine", medicineRoutes);
 app.use('/pharmacy',pharmacyRoutes)
-app.use('/order',pharmacyRoutes)
-app.use('/prescription',pharmacyRoutes)
+app.use('/order',orderRoutes)
+app.use('/prescription',prescriptionRoutes)
 
 
 app.get("/", (req, res) => {

@@ -2,7 +2,7 @@ import orderModel from '../models/order.js'
 import express from "express";
 const app=express()
 
-router=express.Router()
+const router=express.Router()
 
 router.get("/", async (req, res) => {
     try {
@@ -28,3 +28,5 @@ router.get("/", async (req, res) => {
       res.status(500).json({ error: error });
     }
   });
+
+  export default router;
