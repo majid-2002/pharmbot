@@ -7,9 +7,13 @@ import mongoose from "mongoose";
 import { imagetotext } from "./utils/imagetotextllava.js";
 import medicineRoutes from "./routes/medicine.js";
 import prescriptionModel from "./models/prescription.js";
-import pharmacyRoutes from './routes/pharmacy.js'
+import pharmacyRoutes from "./routes/pharmacy.js";
+import prescriptionRoutes from "./routes/prescription.js";
+
+import cors from "cors";
 
 const app = express().use(bodyParser.json());
+app.use(cors());
 
 const verify_token = process.env.VERIFY_TOKEN;
 const access_token = process.env.ACCESS_TOKEN;
@@ -33,8 +37,8 @@ app.listen(PORT, async () => {
 });
 
 app.use("/medicine", medicineRoutes);
-app.use('/pharmacy',pharmacyRoutes)
-
+app.use("/pharmacy", pharmacyRoutes);
+app.use("/prescription", prescriptionRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).send("200 | Server Running");
