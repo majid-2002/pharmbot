@@ -8,6 +8,8 @@ import { imagetotext } from "./utils/imagetotextllava.js";
 import medicineRoutes from "./routes/medicine.js";
 import prescriptionModel from "./models/prescription.js";
 import pharmacyRoutes from './routes/pharmacy.js'
+import orderRoutes from './routes/order.js'
+import prescriptionRoutes from './routes/prescription.js'
 
 const app = express().use(bodyParser.json());
 
@@ -34,6 +36,8 @@ app.listen(PORT, async () => {
 
 app.use("/medicine", medicineRoutes);
 app.use('/pharmacy',pharmacyRoutes)
+app.use('/order',pharmacyRoutes)
+app.use('/prescription',pharmacyRoutes)
 
 
 app.get("/", (req, res) => {
