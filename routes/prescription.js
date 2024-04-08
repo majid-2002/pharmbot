@@ -42,7 +42,7 @@ router.post("/:prescriptionId/medicine/:medicineId", async (req, res) => {
   try {
     const { prescriptionId, medicineId } = req.params;
 
-    console.log("works here ");
+    console.log("works here aadd prescription ");
 
     // Find the prescription by ID
     const prescription = await prescriptionModel.findById(prescriptionId);
@@ -85,22 +85,22 @@ router.delete("/:prescriptionId/medicine/:medicineId", async (req, res) => {
   try {
     const { prescriptionId, medicineId } = req.params;
 
-    const prescription = await prescriptionModel.findById(prescriptionId);
+    const prescrip = await prescriptionModel.findById(prescriptionId);
 
-    if (!prescription) {
+    if (!prescrip) {
       return res.status(404).json({ message: "Prescription not found" });
     }
 
-    prescription.prescription = prescription.prescription.filter(
-      (medicine) => medicine._id != medicineId
-    );
 
-    // Save the updated prescription
-    await prescription.save();
+    prescrip.prescription = prescrip.prescription.filter((medicine) => {
+      return medicine._id != medicineId;
+    });
+
+    await prescrip.save();
 
     res
       .status(200)
-      .json({ message: "Medicine deleted successfully", prescription });
+      .json({ message: "Medicine deleted successfully", prescrip });
   } catch (error) {
     res.status(500).json({ error: error });
   }
