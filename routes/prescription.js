@@ -1,6 +1,7 @@
 import prescriptionModel from "../models/prescription.js";
 import express from "express";
 import medicineModel from "../models/medicine.js";
+import { readFile } from "node:fs/promises";
 
 const router = express.Router();
 
@@ -28,6 +29,13 @@ router.post("/", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error });
   }
+});
+
+router.get("/image", async (req, res) => {
+  const data = (await readFile("./media/image2.jpeg")).toString("base64");
+  console.log(data);
+
+  res.status(200).json({ data });
 });
 
 router.post("/:prescriptionId/medicine/:medicineId", async (req, res) => {

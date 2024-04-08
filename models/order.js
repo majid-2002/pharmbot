@@ -5,10 +5,6 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  pharmacy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Pharmacy",
-  },
   status: {
     type: String,
     enum: ["pending", "completed"],
@@ -16,13 +12,21 @@ const orderSchema = new mongoose.Schema({
   },
   medicines: [
     {
-      quantity: {
-        type: Number,
+      drug: {
+        type: String,
         required: true,
       },
-      medicine: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Medicine",
+      dosage: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: String,
+        required: true,
+      },
+      price: {
+        type: Number,
+        required: true,
       },
     },
   ],

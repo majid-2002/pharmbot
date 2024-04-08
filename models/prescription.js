@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
 
 const prescriptionSchema = new mongoose.Schema({
-  // phoneno_id: {
-  //   type: String,
-  //   required: true,
-  // },
+  phoneno_id: {
+    type: String,
+    required: true,
+  },
+  imageId: {
+    type: String,
+    required: true,
+  },
   patient: {
     name: {
       type: String,

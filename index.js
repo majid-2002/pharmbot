@@ -8,9 +8,10 @@ import { imagetotext } from "./utils/imagetotextllava.js";
 import medicineRoutes from "./routes/medicine.js";
 import prescriptionModel from "./models/prescription.js";
 import pharmacyRoutes from "./routes/pharmacy.js";
-import orderRoutes from './routes/order.js'
-import prescriptionRoutes from './routes/prescription.js'
+import orderRoutes from "./routes/order.js";
+import prescriptionRoutes from "./routes/prescription.js";
 import cors from "cors";
+import { createUploadthing } from "uploadthing/express";
 
 const app = express().use(bodyParser.json());
 app.use(cors());
@@ -37,10 +38,9 @@ app.listen(PORT, async () => {
 });
 
 app.use("/medicine", medicineRoutes);
-app.use('/pharmacy',pharmacyRoutes)
-app.use('/order',orderRoutes)
-app.use('/prescription',prescriptionRoutes)
-
+app.use("/pharmacy", pharmacyRoutes);
+app.use("/order", orderRoutes);
+app.use("/prescription", prescriptionRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).send("200 | Server Running");
@@ -124,6 +124,7 @@ app.post("/webhook", async (req, res) => {
 
         fs.writeFileSync("./media/" + mediaId + ".jpeg", mediaData);
 
+
         // {
         //   patient: {
         //     name: "John Smith",
@@ -158,14 +159,27 @@ app.post("/webhook", async (req, res) => {
           await imagetotext("./media/" + mediaId + ".jpeg")
         );
 
+        console.log("Prescription Data:", prescriptionData);
+
+        // Save prescription to database
+
         const prescriptionInstance = new prescriptionModel({
-          patient: prescriptionData.patient,
+          patient: {
+            name: prescriptionData.patient.name,
+            address: prescriptionData.patient.address,
+            age: prescriptionData.patient.age,
+          },
           prescription: prescriptionData.prescription,
+          phoneno_id: phone_no_id,
+          imageId: mediaId,
         });
+
+        let success = false;
 
         prescriptionInstance
           .save()
           .then((savedPrescription) => {
+            success = true;
             console.log("Prescription saved successfully:", savedPrescription);
           })
           .catch((error) => {
@@ -173,26 +187,51 @@ app.post("/webhook", async (req, res) => {
           });
 
         // Send a confirmation message
-        await axios({
-          method: "POST",
-          url:
-            "https://graph.facebook.com/v13.0/" +
-            phone_no_id +
-            "/messages?access_token=" +
-            access_token,
-          data: {
-            messaging_product: "whatsapp",
-            to: from,
-            type: "text",
-            text: {
-              body: "Your prescription has been received. We will get back to you shortly.",
+        if (success) {
+          await axios({
+            method: "POST",
+            url:
+              "https://graph.facebook.com/v13.0/" +
+              phone_no_id +
+              "/messages?access_token=" +
+              access_token,
+            data: {
+              messaging_product: "whatsapp",
+              to: from,
+              type: "text",
+              text: {
+                body: "Your prescription has been received. We will get back to you shortly.",
+              },
             },
-          },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access_token}`,
-          },
-        });
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${access_token}`,
+            },
+          });
+        } else {
+          await axios({
+            method: "POST",
+            url:
+              "https://graph.facebook.com/v13.0/" +
+              phone_no_id +
+              "/messages?access_token=" +
+              access_token,
+            data: {
+              messaging_product: "whatsapp",
+              to: from,
+              type: "text",
+              text: {
+                body: "Sorry, we could not process your prescription. Please try again later.",
+              },
+            },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${access_token}`,
+            },
+          });
+        }
+
+
       }
     }
 

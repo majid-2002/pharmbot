@@ -22,6 +22,7 @@
     "openai": "^4.33.0",
     "replicate": "^0.29.1",
     "request": "^2.88.2",
-    "tesseract.js": "^5.0.5"
+    "tesseract.js": "^5.0.5",
+    "uploadthing": "^6.7.0"
   }
 }
