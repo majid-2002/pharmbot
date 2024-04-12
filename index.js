@@ -124,7 +124,6 @@ app.post("/webhook", async (req, res) => {
 
         fs.writeFileSync("./media/" + mediaId + ".jpeg", mediaData);
 
-
         // {
         //   patient: {
         //     name: "John Smith",
@@ -166,72 +165,60 @@ app.post("/webhook", async (req, res) => {
         const prescriptionInstance = new prescriptionModel({
           patient: {
             name: prescriptionData.patient.name,
-            address: prescriptionData.patient.address,
-            age: prescriptionData.patient.age,
+            address: prescriptionData.patient.address || "",
+            age: prescriptionData.patient.age || 0,
           },
           prescription: prescriptionData.prescription,
           phoneno_id: phone_no_id,
           imageId: mediaId,
         });
 
-        let success = false;
 
         prescriptionInstance
           .save()
-          .then((savedPrescription) => {
-            success = true;
+          .then(async (savedPrescription) => {
             console.log("Prescription saved successfully:", savedPrescription);
+            const response = await axios.post(
+              `https://graph.facebook.com/v13.0/${phone_no_id}/messages?access_token=${access_token}`,
+              {
+                messaging_product: "whatsapp",
+                to: from,
+                type: "text",
+                text: {
+                  body: "Your prescription has been received. We will get back to you shortly.",
+                },
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${access_token}`,
+                },
+              }
+            );
+            console.log("Response from Facebook API:", response.data);
           })
-          .catch((error) => {
+          .catch(async (error) => {
+            const response = await axios.post(
+              `https://graph.facebook.com/v13.0/${phone_no_id}/messages?access_token=${access_token}`,
+              {
+                messaging_product: "whatsapp",
+                to: from,
+                type: "text",
+                text: {
+                  body: "Sorry, we could not process your prescription. Please try again later.",
+                },
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${access_token}`,
+                },
+              }
+            );
             console.error("Error saving prescription:", error);
           });
 
         // Send a confirmation message
-        if (success) {
-          await axios({
-            method: "POST",
-            url:
-              "https://graph.facebook.com/v13.0/" +
-              phone_no_id +
-              "/messages?access_token=" +
-              access_token,
-            data: {
-              messaging_product: "whatsapp",
-              to: from,
-              type: "text",
-              text: {
-                body: "Your prescription has been received. We will get back to you shortly.",
-              },
-            },
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${access_token}`,
-            },
-          });
-        } else {
-          await axios({
-            method: "POST",
-            url:
-              "https://graph.facebook.com/v13.0/" +
-              phone_no_id +
-              "/messages?access_token=" +
-              access_token,
-            data: {
-              messaging_product: "whatsapp",
-              to: from,
-              type: "text",
-              text: {
-                body: "Sorry, we could not process your prescription. Please try again later.",
-              },
-            },
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${access_token}`,
-            },
-          });
-        }
-
-
       }
     }
 

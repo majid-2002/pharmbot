@@ -12,14 +12,14 @@ const prescriptionSchema = new mongoose.Schema({
   patient: {
     name: {
       type: String,
-      required: true,
     },
     address: {
       type: String,
-      required: true,
+      default: "",
     },
     age: {
-      type: Number,
+      type: String,
+      default: "0"
     },
   },
   prescription: [
